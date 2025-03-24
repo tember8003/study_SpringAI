@@ -1,0 +1,57 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.2.3'  // ✅ 안정적인 Spring Boot 버전
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'springAi'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17) // ✅ Java 17 유지
+	}
+}
+
+repositories {
+	mavenCentral()  // ✅ 필수! Gradle이 라이브러리를 다운로드할 수 있도록 설정
+}
+
+ext {
+	set('springAiVersion', "1.0.0-M6")  // 🔥 M6 버전 적용
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// ✅ Spring AI Core (필수)
+	implementation "org.springframework.ai:spring-ai-core:${springAiVersion}"
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	// ✅ OpenAI 지원 (ChatGPT API)
+	implementation "org.springframework.ai:spring-ai-openai-spring-boot-starter:${springAiVersion}"
+
+	// ✅ Lombok (중복 정리)
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// ✅ 개발 환경용
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	// ✅ 테스트 환경
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.projectreactor:reactor-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+dependencyManagement {
+	imports {
+		// ✅ Spring AI 전체 라이브러리 버전 관리 (M6 적용)
+		mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
