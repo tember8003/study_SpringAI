@@ -1,5 +1,6 @@
 package springAi.learning.Controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RequestMapping("/api")
 @RestController
 public class ChatController {
@@ -68,12 +70,13 @@ public class ChatController {
     }
 
     @PostMapping(value = "/food-info", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Mono<String> generateFoodInfo(@RequestPart("image") MultipartFile image){
-        try{
-            return chatService.getFoodInfo(image);
-        } catch(Exception e) {
-            return Mono.just("실패: " + e.getMessage());
-        }
+    public Mono<List<FoodInfoDTO>> generateFoodInfo(@RequestPart("image") MultipartFile image) {
+        return chatService.getFoodInfo(image)
+                .onErrorResume(e -> {
+                    // 로그 남기고 빈 리스트 반환 (또는 적절한 예외 처리)
+                    log.error("음식 정보 생성 실패", e);
+                    return Mono.just(List.of());  // 또는 Mono.error(e)로 에러 그대로 던질 수도 있음
+                });
     }
 
 }

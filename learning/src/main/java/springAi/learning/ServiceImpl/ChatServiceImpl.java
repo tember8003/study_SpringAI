@@ -165,31 +165,48 @@ public class ChatServiceImpl implements ChatService {
         });
     }
     @Override
-    public Mono<String> getFoodInfo(MultipartFile image) {
+    public Mono<List<FoodInfoDTO>> getFoodInfo(MultipartFile image) {
         if (apiKey == null || apiKey.isEmpty()) {
-            return Mono.just("Google AI API Key가 설정되지 않았습니다.");
+            return Mono.error(new RuntimeException("Google AI API Key가 설정되지 않았습니다."));
         }
 
         try {
-            byte[] ImageBytes = image.getBytes();
-            String base64Image = Base64.getEncoder().encodeToString(ImageBytes);
+            byte[] imageBytes = image.getBytes();
+            String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+
             Map<String, Object> textPart = Map.of(
-                    "text", "이 이미지는 음식 사진입니다. 이 음식이 어떤 음식인지 알려주고, 아래 조건에 맞는 영양 성분 정보를 JSON 형식으로 반환해줘:\n" +
-                            "\n" +
-                            "- 음식 이름 (food_name)\n" +
-                            "- 예상 영양 성분 (100g 기준: nutritionInfo)\n" +
-                            "  - 칼로리 (calories)\n" +
-                            "  - 단백질 (protein)\n" +
-                            "  - 지방 (fat)\n" +
-                            "  - 탄수화물 (carbohydrates)\n" +
-                            "  - 칼슘 (calcium)\n" +
-                            "  - 오메가-3 지방산 (omega_3)\n" +
-                            "- 음식에 대한 간단한 설명 (description)\n" +
-                            "\n" +
-                            "단, JSON 전체는 코드 블록으로 감싸서 반환해줘. 음식이 아닌 경우 \"음식이 아닙니다\" 라고만 응답해줘."
+                    "text", """
+                        
+                        이 이미지는 음식 사진입니다. 이 음식이 어떤 음식인지 알려주고, 아래 조건에 맞는 영양 성분 정보를 JSON 형식으로 반환해줘:
+
+                        - 음식 이름 (`food_name`)
+                        - 예상 영양 성분 (100g 기준: `nutritionInfo`)
+                          - 칼로리 (`calories`)
+                          - 단백질 (`protein`)
+                          - 지방 (`fat`)
+                          - 탄수화물 (`carbohydrates`)
+                          - 칼슘 (`calcium`)
+                          - 오메가-3 지방산 (`omega_3`)
+                        - 음식에 대한 간단한 설명 (`description`)
+
+                        단, JSON 전체는 코드 블록으로 감싸서 반환해줘. 음식이 아닌 경우 "음식이 아닙니다" 라고만 응답해줘.
+                        
+                        하나 이상의 음식이 감지되었다면, 아래와 같은 JSON 형태로 응답해줘:
+                        ```json
+                                {
+                                  "foods": [
+                                    {
+                                      "food_name": "...",
+                                      "nutritionInfo": { ... },
+                                      "description": "..."
+                                    },
+                                    ...
+                                  ]
+                                }
+                    """
             );
 
-            Map<String, Object> ImagePart = Map.of(
+            Map<String, Object> imagePart = Map.of(
                     "inline_data", Map.of(
                             "mime_type", image.getContentType(),
                             "data", base64Image
@@ -198,7 +215,7 @@ public class ChatServiceImpl implements ChatService {
 
             Map<String, Object> requestBody = Map.of(
                     "contents", List.of(Map.of(
-                            "parts", List.of(textPart, ImagePart)
+                            "parts", List.of(textPart, imagePart)
                     ))
             );
 
@@ -220,8 +237,9 @@ public class ChatServiceImpl implements ChatService {
 
                             JsonNode root = mapper.readTree(responseBody);
 
+                            // candidates 배열 확인
                             if (!root.has("candidates") || !root.get("candidates").isArray() || root.get("candidates").size() == 0) {
-                                return Mono.just("Gemini 응답에 candidates가 없습니다.");
+                                return Mono.error(new RuntimeException("Gemini 응답에 candidates가 없습니다."));
                             }
 
                             JsonNode jsonNode = root
@@ -231,26 +249,34 @@ public class ChatServiceImpl implements ChatService {
                                     .path("text");
 
                             if (jsonNode == null || jsonNode.isMissingNode()) {
-                                return Mono.just("Gemini 응답에서 텍스트를 찾을 수 없습니다.");
+                                return Mono.error(new RuntimeException("Gemini 응답에서 텍스트를 찾을 수 없습니다."));
                             }
+
                             String jsonText = jsonNode.asText();
 
-                            String jsonOnly = jsonText.replaceAll("(?s).* json\\s*(\\{.*?\\})\\s* .*", "$1");
+                            // 코드블록 제거
+                            String jsonOnly = jsonText.replaceAll("(?s).*```json\\s*(\\{.*?\\})\\s*```.*", "$1");
 
-                            FoodInfoDTO foodInfoDTO = mapper.readValue(jsonOnly, FoodInfoDTO.class);
+                            // foods 배열만 추출
+                            JsonNode foodsNode = mapper.readTree(jsonOnly).path("foods");
 
-                            String resultJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(foodInfoDTO);
-                            return Mono.just(resultJson);
+                            if (!foodsNode.isArray()) {
+                                return Mono.error(new RuntimeException("foods 배열이 없습니다."));
+                            }
+
+                            List<FoodInfoDTO> foodList = mapper.readerForListOf(FoodInfoDTO.class).readValue(foodsNode);
+
+                            return Mono.just(foodList);
+
                         } catch (Exception e) {
-                            return Mono.just("Gemini 응답 파싱 실패: " + e.getMessage());
+                            return Mono.error(new RuntimeException("Gemini 응답 파싱 실패: " + e.getMessage()));
                         }
                     })
-                    .switchIfEmpty(Mono.just("Google AI API 응답 비어 있음"))
-                    .doOnError(e -> log.error("Google AI API 호출 중 예외 발생", e))
-                    .onErrorResume(e -> Mono.just("Google AI API 호출 중 예외 발생: " + e.getMessage()));
+                    .switchIfEmpty(Mono.error(new RuntimeException("Google AI API 응답 비어 있음")))
+                    .doOnError(e -> log.error("Google AI API 호출 중 예외 발생", e));
 
         } catch (Exception e) {
-            return Mono.just("이미지 처리 중 오류 발생: " + e.getMessage());
+            return Mono.error(new RuntimeException("이미지 처리 중 오류 발생: " + e.getMessage()));
         }
     }
 }

@@ -13,6 +13,6 @@ public interface ChatService{
     Mono<String> getGeminiResponse(String param, List<String> responseModalities);
     Mono<String> getGeminiResponseAndSaveImage(String message);
     Mono<String> getSdImageResponseAndSave(String prompt);
-    Mono<String> getFoodInfo(MultipartFile image);
+    Mono<List<FoodInfoDTO>> getFoodInfo(MultipartFile image);
 
 }
