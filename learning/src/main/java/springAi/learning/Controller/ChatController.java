@@ -1,8 +1,11 @@
 package springAi.learning.Controller;
 
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
 import springAi.learning.DTO.Base64ImageDTO;
+import springAi.learning.DTO.FoodInfoDTO;
 import springAi.learning.Service.ChatService;
 import springAi.learning.Util.ImageSaveUtil;
 
@@ -61,6 +64,15 @@ public class ChatController {
             return chatService.getGeminiResponseAndSaveImage(geminiResponseJson);
         } catch (Exception e) {
             return Mono.just("파일 저장 실패:"+e);
+        }
+    }
+
+    @PostMapping(value = "/food-info", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Mono<String> generateFoodInfo(@RequestPart("image") MultipartFile image){
+        try{
+            return chatService.getFoodInfo(image);
+        } catch(Exception e) {
+            return Mono.just("실패: " + e.getMessage());
         }
     }
 

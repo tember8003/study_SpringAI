@@ -1,22 +1,19 @@
 package springAi.learning.ServiceImpl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import springAi.learning.DTO.FoodInfoDTO;
 import springAi.learning.Service.ChatService;
 import springAi.learning.Util.ImageSaveUtil;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -166,5 +163,94 @@ public class ChatServiceImpl implements ChatService {
                 return "SD 이미지 저장 실패: " + e.getMessage();
             }
         });
+    }
+    @Override
+    public Mono<String> getFoodInfo(MultipartFile image) {
+        if (apiKey == null || apiKey.isEmpty()) {
+            return Mono.just("Google AI API Key가 설정되지 않았습니다.");
+        }
+
+        try {
+            byte[] ImageBytes = image.getBytes();
+            String base64Image = Base64.getEncoder().encodeToString(ImageBytes);
+            Map<String, Object> textPart = Map.of(
+                    "text", "이 이미지는 음식 사진입니다. 이 음식이 어떤 음식인지 알려주고, 아래 조건에 맞는 영양 성분 정보를 JSON 형식으로 반환해줘:\n" +
+                            "\n" +
+                            "- 음식 이름 (food_name)\n" +
+                            "- 예상 영양 성분 (100g 기준: nutritionInfo)\n" +
+                            "  - 칼로리 (calories)\n" +
+                            "  - 단백질 (protein)\n" +
+                            "  - 지방 (fat)\n" +
+                            "  - 탄수화물 (carbohydrates)\n" +
+                            "  - 칼슘 (calcium)\n" +
+                            "  - 오메가-3 지방산 (omega_3)\n" +
+                            "- 음식에 대한 간단한 설명 (description)\n" +
+                            "\n" +
+                            "단, JSON 전체는 코드 블록으로 감싸서 반환해줘. 음식이 아닌 경우 \"음식이 아닙니다\" 라고만 응답해줘."
+            );
+
+            Map<String, Object> ImagePart = Map.of(
+                    "inline_data", Map.of(
+                            "mime_type", image.getContentType(),
+                            "data", base64Image
+                    )
+            );
+
+            Map<String, Object> requestBody = Map.of(
+                    "contents", List.of(Map.of(
+                            "parts", List.of(textPart, ImagePart)
+                    ))
+            );
+
+            return webClientBuilder
+                    .baseUrl(GOOGLE_API_URL + "?key=" + apiKey)
+                    .build()
+                    .post()
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .onStatus(
+                            status -> !status.is2xxSuccessful(),
+                            clientResponse -> clientResponse.bodyToMono(String.class)
+                                    .flatMap(errorBody -> Mono.error(new RuntimeException("Gemini API 오류 응답: " + errorBody)))
+                    )
+                    .bodyToMono(String.class)
+                    .flatMap(responseBody -> {
+                        try {
+                            ObjectMapper mapper = new ObjectMapper();
+
+                            JsonNode root = mapper.readTree(responseBody);
+
+                            if (!root.has("candidates") || !root.get("candidates").isArray() || root.get("candidates").size() == 0) {
+                                return Mono.just("Gemini 응답에 candidates가 없습니다.");
+                            }
+
+                            JsonNode jsonNode = root
+                                    .path("candidates").get(0)
+                                    .path("content")
+                                    .path("parts").get(0)
+                                    .path("text");
+
+                            if (jsonNode == null || jsonNode.isMissingNode()) {
+                                return Mono.just("Gemini 응답에서 텍스트를 찾을 수 없습니다.");
+                            }
+                            String jsonText = jsonNode.asText();
+
+                            String jsonOnly = jsonText.replaceAll("(?s).* json\\s*(\\{.*?\\})\\s* .*", "$1");
+
+                            FoodInfoDTO foodInfoDTO = mapper.readValue(jsonOnly, FoodInfoDTO.class);
+
+                            String resultJson = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(foodInfoDTO);
+                            return Mono.just(resultJson);
+                        } catch (Exception e) {
+                            return Mono.just("Gemini 응답 파싱 실패: " + e.getMessage());
+                        }
+                    })
+                    .switchIfEmpty(Mono.just("Google AI API 응답 비어 있음"))
+                    .doOnError(e -> log.error("Google AI API 호출 중 예외 발생", e))
+                    .onErrorResume(e -> Mono.just("Google AI API 호출 중 예외 발생: " + e.getMessage()));
+
+        } catch (Exception e) {
+            return Mono.just("이미지 처리 중 오류 발생: " + e.getMessage());
+        }
     }
 }
