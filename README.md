@@ -1,10 +1,11 @@
 ## 📖 소개 - Learning Spring AI
-본 공부 내용은 **Spring AI** 프레임워크를 활용하여 OpenAI(ChatGPT), Google Gemini API와 연동해 텍스트 및 이미지 생성 기능을 구현한 것을 기록했습니다.
+본 공부 내용은 **Spring AI** 프레임워크를 활용하여 OpenAI(ChatGPT), Google Gemini API와 연동해 텍스트 및 이미지 생성 기능, 음식 사진을 보내면 음식 이름, 정보, 설명 반환 기능을 구현한 것을 기록했습니다.
 
 또한 **Stable Diffusion(WebUI)** 를 사용해 이미지를 생성하고, 그 결과를 저장하는 API 구현 방법도 포함되어 있습니다.
 
 - **텍스트 기반 응답**: OpenAI 및 Google Gemini API
 - **이미지 생성 및 저장**: Stable Diffusion 및 Gemini API의 Base64 이미지 응답을 PNG 파일로 저장
+- **이미지 기반 응답**: Google Gemini API
 
 
 ## 🧩 Spring AI란?
