@@ -115,6 +115,7 @@ learning/
 | POST | /api/sd-image | Stable Diffusion 이미지 생성 (Base64 JSON 포함) 반환 |
 | POST | /api/save-sd-image | SD JSON 응답 전달 → 이미지 저장 |
 | POST | /api/save-gemini-image | Gemini JSON 응답 전달 → 이미지 저장 |
+| POST | /api/food-info |	음식 이미지 업로드 → 음식명, 설명, 영양 정보 JSON 반환 (Gemini Vision 활용) |
 
 
 ## 🛠 서비스 및 Util 설명
@@ -123,6 +124,9 @@ learning/
 - Google Gemini API 비동기 WebClient 호출
 - Stable Diffusion API 호출 및 JSON 반환
 - 응답 내 Base64 이미지 추출 후 파일 저장
+- 음식 이미지 분석 기능 추가:
+  - Gemini Vision API를 통해 이미지에서 음식 식별
+  - 인식된 음식의 이름, 간단한 설명, 칼로리·단백질·지방 등의 영양 성분 추정값 제공
 
 ### ✅ ImageSaveUtil
 - `saveGeminiImageFromResponse()`: Gemini JSON → Base64 추출 및 이미지 저장
@@ -139,6 +143,10 @@ Gemini 이미지를 저장할 때
 SD 이미지를 저장할 때
 1. /sd-image → Stable Diffusion API 호출 및 JSON 반환
 2. /save-sd-image → SD JSON 전달 후 이미지 저장
+
+음식 이미지 정보 분석 흐름:
+1. /api/food-info → 이미지 업로드 및 분석 요청
+2. Gemini Vision API를 통해 음식 이름 + 설명 + 영양 정보 JSON 형식 반환
 ```
 
 
@@ -163,9 +171,11 @@ SD 이미지를 저장할 때
 | /api/save-sd-image | SD JSON 응답 전달 및 저장 요청 | <img src="https://github.com/user-attachments/assets/e518677b-9684-40e0-8130-633857269818" width="400"/> | <img src="https://github.com/user-attachments/assets/a13936a5-6e75-46eb-9695-85cca18e64c1" width="400"/> |
 | /api/gemini-image | Gemini 이미지 생성 응답 확인 | <img src="https://github.com/user-attachments/assets/f1dfa3f6-a48b-4085-8b02-fe65771370e8" width="400"/> | - |
 | /api/save-gemini-image | Gemini JSON 응답 전달 및 저장 요청 | <img src="https://github.com/user-attachments/assets/ad902c3b-4ea5-4061-8a44-d0e8fd595867" width="400"/> | <img src="https://github.com/user-attachments/assets/b70e57c6-96c2-45a6-9132-c9a5422725ee" width="400"/> |
+| /api/food-info | 음식 이미지 분석 (음식명, 설명, 영양 정보 반환) | <img src="https://github.com/user-attachments/assets/food-request.png" width="400"/> | <img src="https://github.com/user-attachments/assets/food-response.png" width="400"/> |
+
 
 
 ---
-> 작성일: 2025-03-24  
+> 작성일: 2025-04-04
 
 
