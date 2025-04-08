@@ -167,11 +167,11 @@ SD 이미지를 저장할 때
 ## 📸 실제 Postman 테스트 결과
 | 테스트 API | 설명 | 요청 스크린샷 | 응답 결과 이미지 |
 |------------|------|----------------|-----------------|
-| /api/chat | Gemini & ChatGPT 동시 응답 확인 | <img src="https://github.com/user-attachments/assets/d0ab1b98-b0b9-4e3d-9a34-a6e6c4a93b8b" width="400"/> | - |
-| /api/sd-image | Stable Diffusion 이미지 생성 응답 | <img src="https://github.com/user-attachments/assets/93cfe73d-66fd-41d6-b4e3-f317702aa81f" width="400"/> | - |
-| /api/save-sd-image | SD JSON 응답 전달 및 저장 요청 | <img src="https://github.com/user-attachments/assets/e518677b-9684-40e0-8130-633857269818" width="400"/> | <img src="https://github.com/user-attachments/assets/a13936a5-6e75-46eb-9695-85cca18e64c1" width="400"/> |
-| /api/gemini-image | Gemini 이미지 생성 응답 확인 | <img src="https://github.com/user-attachments/assets/f1dfa3f6-a48b-4085-8b02-fe65771370e8" width="400"/> | - |
-| /api/save-gemini-image | Gemini JSON 응답 전달 및 저장 요청 | <img src="https://github.com/user-attachments/assets/ad902c3b-4ea5-4061-8a44-d0e8fd595867" width="400"/> | <img src="https://github.com/user-attachments/assets/b70e57c6-96c2-45a6-9132-c9a5422725ee" width="400"/> |
+| /api/chat | Gemini & ChatGPT 동시 응답 확인 | <img src="https://github.com/user-attachments/assets/fb5b542e-8815-49e7-84a9-0ef8fc46f35d" width="400"/> | - |
+| /api/sd-image | Stable Diffusion 이미지 생성 응답 | <img src="https://github.com/user-attachments/assets/fe47e3f3-7ec3-47d1-b4f0-b7e8930d3e62" width="400"/> | - |
+| /api/save-sd-image | SD JSON 응답 전달 및 저장 요청 | <img src="https://github.com/user-attachments/assets/7fc7eab6-d984-486b-93b0-c4967f312080" width="400"/> | <img src="https://github.com/user-attachments/assets/e92a4823-6e67-4ef9-909f-235910971d6f" width="400"/> |
+| /api/gemini-image | Gemini 이미지 생성 응답 확인 | <img src="https://github.com/user-attachments/assets/0fc303ba-a13c-4814-9a7c-cfd86927924d" width="400"/> | - |
+| /api/save-gemini-image | Gemini JSON 응답 전달 및 저장 요청 | <img src="https://github.com/user-attachments/assets/2e14cd11-d113-401c-b3a8-e62b1da65892" width="400"/> | <img src="https://github.com/user-attachments/assets/2da71e9c-b97b-47b4-9228-522abde5bf30" width="400"/> |
 | /api/food-info | 음식 이미지 분석 (음식명, 설명, 영양 정보 반환) | <img src="https://github.com/user-attachments/assets/food-request.png" width="400"/> | <img src="https://github.com/user-attachments/assets/food-response.png" width="400"/> |
 
 
