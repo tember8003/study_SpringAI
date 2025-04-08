@@ -172,7 +172,37 @@ SD 이미지를 저장할 때
 | /api/save-sd-image | SD JSON 응답 전달 및 저장 요청 | <img src="https://github.com/user-attachments/assets/7fc7eab6-d984-486b-93b0-c4967f312080" width="400"/> | <img src="https://github.com/user-attachments/assets/e92a4823-6e67-4ef9-909f-235910971d6f" width="400"/> |
 | /api/gemini-image | Gemini 이미지 생성 응답 확인 | <img src="https://github.com/user-attachments/assets/0fc303ba-a13c-4814-9a7c-cfd86927924d" width="400"/> | - |
 | /api/save-gemini-image | Gemini JSON 응답 전달 및 저장 요청 | <img src="https://github.com/user-attachments/assets/2e14cd11-d113-401c-b3a8-e62b1da65892" width="400"/> | <img src="https://github.com/user-attachments/assets/2da71e9c-b97b-47b4-9228-522abde5bf30" width="400"/> |
-| /api/food-info | 음식 이미지 분석 (음식명, 설명, 영양 정보 반환) | <img src="https://github.com/user-attachments/assets/food-request.png" width="400"/> | <img src="https://github.com/user-attachments/assets/food-response.png" width="400"/> |
+| /api/food-info | 음식 이미지 분석 (음식명, 설명, 영양 정보 반환) | <img src="https://github.com/user-attachments/assets/72591ed7-f98a-4d7e-976e-e3c57f4c67ec" width="400"/> | <img src="https://github.com/user-attachments/assets/54c60802-e053-4c0b-bfe7-99b4234aa439" width="400"/> |
+
+### 음식 이미지 분석 JSON 형태 예시
+```
+[
+    {
+        "food_name": "파인애플 피자",
+        "nutritionInfo": {
+            "calories": 266.0,
+            "protein": 11.0,
+            "fat": 10.0,
+            "carbohydrates": 32.0,
+            "calcium": 150.0,
+            "omega_3": 0.1
+        },
+        "description": "파인애플 피자는 피자 위에 파인애플을 토핑으로 올려 구운 피자입니다. 달콤한 파인애플과 짭짤한 치즈의 조합이 독특한 맛을 선사합니다."
+    },
+    {
+        "food_name": "라자냐",
+        "nutritionInfo": {
+            "calories": 180.0,
+            "protein": 12.0,
+            "fat": 8.0,
+            "carbohydrates": 15.0,
+            "calcium": 200.0,
+            "omega_3": 0.2
+        },
+        "description": "라자냐는 넓적한 파스타 면 사이에 고기, 채소, 치즈 등을 층층이 쌓아 오븐에 구운 이탈리아 요리입니다. 풍부한 맛과 부드러운 식감이 특징입니다."
+    }
+]
+```
 
 
 
